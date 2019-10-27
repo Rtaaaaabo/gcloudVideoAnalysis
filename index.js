@@ -1,45 +1,51 @@
-const video = require("@google-cloud/video-intelligence").v1;
-const client = new video.VideoIntelligenceServiceClient();
+"use strict";
+async function main() {
+  const videoIntelligence = require("@google-cloud/video-intelligence");
 
-const gcsUrl = "gs://test-pay-per-laugh/test_movie.MOV";
+  // Creates a client
+  const client = new videoIntelligence.VideoIntelligenceServiceClient();
+  const gcsUri = "gs://test-pay-per-laugh/test_movie.MOV";
 
-const request = {
-  inputUri: gcsUri,
-  features: ["LABEL_DETECTION"]
-};
+  // Construct request
+  const request = {
+    inputUri: gcsUri,
+    features: ["LABEL_DETECTION"]
+  };
+  const [operation] = await client.annotateVideo(request);
 
-const [operation] = await client.annotateVideo(request);
-console.log("Waiting...");
-const [operationResult] = await operation.promise();
+  console.log(
+    "Waiting for operation to complete... (this may take a few minutes)"
+  );
 
-// Annotation
-const annotations = operationResult.annotationResults[0];
-
-const labels = annotations.segmentLabelAnnotations;
-labels.forEach(label => {
-  console.log(`Label ${label.entity.description} occurs at:`);
-  label.segments.forEach(segment => {
-    const time = segment.segment;
-    if (time.startTimeOffset.seconds === undefined) {
-      time.startTimeOffset.seconds = 0;
-    }
-    if (time.startTimeOffset.nanos === undefined) {
-      time.startTimeOffset.nanos = 0;
-    }
-    if (time.endTimeOffset.seconds === undefined) {
-      time.endTimeOffset.seconds = 0;
-    }
-    if (time.endTimeOffset.nanos === undefined) {
-      time.endTimeOffset.nanos = 0;
-    }
-    console.log(
-      `\tStart: ${time.startTimeOffset.seconds}` +
-        `.${(time.startTimeOffset.nanos / 1e6).toFixed(0)}s`
-    );
-    console.log(
-      `\tEnd: ${time.endTimeOffset.seconds}.` +
-        `${(time.endTimeOffset.nanos / 1e6).toFixed(0)}s`
-    );
-    console.log(`\tConfidence: ${segment.confidence}`);
+  const [operationResult] = await operation.promise();
+  const annotations = operationResult.annotationResults[0];
+  const labels = annotations.segmentLabelAnnotations;
+  labels.forEach(label => {
+    console.log(`Label ${label.entity.description} occurs at:`);
+    label.segments.forEach(segment => {
+      segment = segment.segment;
+      if (segment.startTimeOffset.seconds === undefined) {
+        segment.startTimeOffset.seconds = 0;
+      }
+      if (segment.startTimeOffset.nanos === undefined) {
+        segment.startTimeOffset.nanos = 0;
+      }
+      if (segment.endTimeOffset.seconds === undefined) {
+        segment.endTimeOffset.seconds = 0;
+      }
+      if (segment.endTimeOffset.nanos === undefined) {
+        segment.endTimeOffset.nanos = 0;
+      }
+      console.log(
+        `\tStart: ${segment.startTimeOffset.seconds}` +
+          `.${(segment.startTimeOffset.nanos / 1e6).toFixed(0)}s`
+      );
+      console.log(
+        `\tEnd: ${segment.endTimeOffset.seconds}.` +
+          `${(segment.endTimeOffset.nanos / 1e6).toFixed(0)}s`
+      );
+    });
   });
-});
+}
+
+main().catch(console.error);

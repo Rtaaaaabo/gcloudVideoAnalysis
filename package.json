@@ -9,6 +9,7 @@
   "author": "taku nakagawa",
   "license": "ISC",
   "dependencies": {
-    "@google-cloud/video-intelligence": "^2.5.1"
+    "@google-cloud/video-intelligence": "^2.5.1",
+    "express": "^4.17.1"
   }
 }
