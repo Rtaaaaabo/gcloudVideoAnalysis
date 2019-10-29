@@ -1,6 +1,6 @@
 "use strict";
 async function main() {
-  const videoIntelligence = require("@google-cloud/video-intelligence");
+  const videoIntelligence = require("@google-cloud/video-intelligence").v1;
 
   // Creates a client
   const client = new videoIntelligence.VideoIntelligenceServiceClient();
